@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Cresent Construction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #339bf2;
+            --dark-color: #00225a;
+            --success-color: #25d366;
+            --danger-color: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--dark-color) 0%, #1a3a52 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+            color: white !important;
+        }
+
+        .navbar-brand i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .container-main {
+            padding: 40px 20px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--dark-color) 0%, var(--primary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px 12px 0 0;
+            padding: 20px;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            color: var(--dark-color);
+            font-weight: 600;
+            border: none;
+            padding: 15px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            border-color: #e9ecef;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-residential {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-commercial {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-interior {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge-renovation {
+            background: #e0f2f1;
+            color: #00695c;
+        }
+
+        .badge-other {
+            background: #f3f3f3;
+            color: #424242;
+        }
+
+        .btn-action {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 0 3px;
+            border-radius: 6px;
+        }
+
+        .btn-action:hover {
+            transform: scale(1.05);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--dark-color) 0%, var(--primary-color) 100%);
+            color: white;
+            border: none;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .detail-label {
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 15px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .no-data i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .no-data p {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+        }
+
+        .spinner-border {
+            color: var(--primary-color);
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-section .btn {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 13px;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: 10px;
+            }
+
+            .btn-action {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+        }
+
+        .footer {
+            background: var(--dark-color);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-building"></i>
+                Cresent Construction - Admin Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin.html">
+                            <i class="fas fa-chart-bar"></i> Dashboard
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-main">
+        <!-- Alerts -->
+        <div id="alertContainer"></div>
+
+        <!-- Statistics -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-chart-line" style="font-size: 30px; color: var(--primary-color);"></i>
+                <div class="stat-number" id="totalQuotes">0</div>
+                <div class="stat-label">Total Quotes</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-home" style="font-size: 30px; color: #ff9800;"></i>
+                <div class="stat-number" id="residentialCount">0</div>
+                <div class="stat-label">Residential</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-building" style="font-size: 30px; color: #9c27b0;"></i>
+                <div class="stat-number" id="commercialCount">0</div>
+                <div class="stat-label">Commercial</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-paint-roller" style="font-size: 30px; color: #00bcd4;"></i>
+                <div class="stat-number" id="interiorCount">0</div>
+                <div class="stat-label">Interior</div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Filter by Project Type</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="filterQuotes('all')">
+                            <i class="fas fa-list"></i> All
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="filterQuotes('residential')">
+                            <i class="fas fa-home"></i> Residential
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="filterQuotes('commercial')">
+                            <i class="fas fa-building"></i> Commercial
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="filterQuotes('interior')">
+                            <i class="fas fa-paint-roller"></i> Interior
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="filterQuotes('renovation')">
+                            <i class="fas fa-hammer"></i> Renovation
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Actions</h5>
+                    <button class="btn btn-sm btn-success" onclick="exportToCSV()">
+                        <i class="fas fa-download"></i> Export to CSV
+                    </button>
+                    <button class="btn btn-sm btn-info" onclick="refreshQuotes()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quotes Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-inbox"></i> Submitted Quotes</h3>
+            </div>
+            <div class="card-body p-0">
+                <div id="loadingSpinner" class="loading" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <div id="noDataMessage" class="no-data" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <p>No quotes submitted yet</p>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table" id="quotesTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Project Type</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quotesBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Quote Modal -->
+    <div class="modal fade" id="viewQuoteModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Quote Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="quoteDetailsContent">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="deleteQuoteBtn">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p><strong>Cresent Construction</strong> | GST: 33HHXPM3536A1Z7</p>
+        <p>📞 +91 7418 621 523 | +91 8072 145 499 | 📧 crescentconstructiontvl@gmail.com</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allQuotes = [];
+        let currentFilter = 'all';
+        let currentQuoteId = null;
+
+        // Load quotes on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQuotes();
+            // Refresh every 30 seconds
+            setInterval(loadQuotes, 30000);
+        });
+
+        // Load all quotes from API
+        async function loadQuotes() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.style.display = 'flex';
+
+            try {
+                const response = await fetch('/api/quotes');
+                const data = await response.json();
+
+                if (data.success) {
+                    allQuotes = data.quotes.reverse(); // Show newest first
+                    updateStatistics();
+                    displayQuotes(allQuotes);
+                    loadingSpinner.style.display = 'none';
+                } else {
+                    showAlert('Error loading quotes', 'danger');
+                    loadingSpinner.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Failed to load quotes', 'danger');
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const total = allQuotes.length;
+            const residential = allQuotes.filter(q => q.projectType === 'residential').length;
+            const commercial = allQuotes.filter(q => q.projectType === 'commercial').length;
+            const interior = allQuotes.filter(q => q.projectType === 'interior').length;
+
+            document.getElementById('totalQuotes').textContent = total;
+            document.getElementById('residentialCount').textContent = residential;
+            document.getElementById('commercialCount').textContent = commercial;
+            document.getElementById('interiorCount').textContent = interior;
+        }
+
+        // Display quotes in table
+        function displayQuotes(quotes) {
+            const quotesTable = document.getElementById('quotesTable');
+            const quotesBody = document.getElementById('quotesBody');
+            const noDataMessage = document.getElementById('noDataMessage');
+
+            if (quotes.length === 0) {
+                quotesTable.style.display = 'none';
+                noDataMessage.style.display = 'block';
+                return;
+            }
+
+            quotesTable.style.display = 'table';
+            noDataMessage.style.display = 'none';
+            quotesBody.innerHTML = '';
+
+            quotes.forEach((quote, index) => {
+                const row = document.createElement('tr');
+                const date = new Date(quote.createdAt).toLocaleDateString('en-IN');
+
+                row.innerHTML = `
+                    <td>${quotes.length - index}</td>
+                    <td><strong>${quote.fullName}</strong></td>
+                    <td>+91 ${quote.phone}</td>
+                    <td><a href="mailto:${quote.email}">${quote.email}</a></td>
+                    <td><span class="badge badge-status badge-${quote.projectType}">${quote.projectType.toUpperCase()}</span></td>
+                    <td>${date}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary btn-action" onclick="viewQuote(${quote.id})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-danger btn-action" onclick="deleteQuote(${quote.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                quotesBody.appendChild(row);
+            });
+        }
+
+        // View quote details
+        function viewQuote(quoteId) {
+            const quote = allQuotes.find(q => q.id === quoteId);
+            if (!quote) return;
+
+            currentQuoteId = quoteId;
+            const date = new Date(quote.createdAt).toLocaleString('en-IN');
+
+            const content = `
+                <div class="detail-label">Full Name</div>
+                <div class="detail-value">${quote.fullName}</div>
+
+                <div class="detail-label">Phone Number</div>
+                <div class="detail-value">+91 ${quote.phone}</div>
+
+                <div class="detail-label">Email Address</div>
+                <div class="detail-value"><a href="mailto:${quote.email}">${quote.email}</a></div>
+
+                <div class="detail-label">Project Type</div>
+                <div class="detail-value">
+                    <span class="badge badge-status badge-${quote.projectType}">${quote.projectType.toUpperCase()}</span>
+                </div>
+
+                <div class="detail-label">Message</div>
+                <div class="detail-value" style="white-space: pre-wrap;">${quote.message}</div>
+
+                <div class="detail-label">Submitted On</div>
+                <div class="detail-value" style="border: none;">${date}</div>
+            `;
+
+            document.getElementById('quoteDetailsContent').innerHTML = content;
+            document.getElementById('deleteQuoteBtn').onclick = () => {
+                deleteQuoteConfirm(quoteId);
+            };
+
+            const modal = new bootstrap.Modal(document.getElementById('viewQuoteModal'));
+            modal.show();
+        }
+
+        // Filter quotes
+        function filterQuotes(type) {
+            currentFilter = type;
+            if (type === 'all') {
+                displayQuotes(allQuotes);
+            } else {
+                const filtered = allQuotes.filter(q => q.projectType === type);
+                displayQuotes(filtered);
+            }
+        }
+
+        // Delete quote
+        async function deleteQuote(quoteId) {
+            if (!confirm('Are you sure you want to delete this quote?')) return;
+
+            try {
+                const response = await fetch(`/api/quotes/${quoteId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Quote deleted successfully', 'success');
+                    loadQuotes();
+                } else {
+                    showAlert('Error deleting quote', 'danger');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Failed to delete quote', 'danger');
+            }
+        }
+
+        // Delete quote from modal
+        async function deleteQuoteConfirm(quoteId) {
+            if (!confirm('Are you sure you want to delete this quote?')) return;
+
+            try {
+                const response = await fetch(`/api/quotes/${quoteId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Quote deleted successfully', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('viewQuoteModal')).hide();
+                    loadQuotes();
+                } else {
+                    showAlert('Error deleting quote', 'danger');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Failed to delete quote', 'danger');
+            }
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (allQuotes.length === 0) {
+                alert('No quotes to export');
+                return;
+            }
+
+            let csv = 'Name,Phone,Email,Project Type,Message,Date\n';
+
+            allQuotes.forEach(quote => {
+                const date = new Date(quote.createdAt).toLocaleDateString('en-IN');
+                const message = quote.message.replace(/"/g, '""').replace(/\n/g, ' ');
+                csv += `"${quote.fullName}","+91 ${quote.phone}","${quote.email}","${quote.projectType}","${message}","${date}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quotes-${new Date().getTime()}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Refresh quotes
+        function refreshQuotes() {
+            loadQuotes();
+            showAlert('Quotes refreshed', 'success');
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                ${message}
+            `;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
