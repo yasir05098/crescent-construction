@@ -6,7 +6,7 @@
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
-const twilio = require('twilio');
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -31,11 +31,10 @@ const emailTransporter = nodemailer.createTransport({
     }
 });
 
-// Twilio Configuration for WhatsApp
-const twilioClient = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-);
+// Meta WhatsApp Cloud API Configuration
+const META_WHATSAPP_API_URL = `https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+const META_ACCESS_TOKEN = process.env.META_WHATSAPP_ACCESS_TOKEN;
+const OWNER_WHATSAPP_NUMBER = process.env.OWNER_WHATSAPP_NUMBER; // Format: 917418621523 (without +)
 
 // Database file for storing quotes
 const DB_FILE = path.join(__dirname, 'quotes.json');
@@ -237,10 +236,53 @@ async function sendEmailToCustomer(quote) {
 // WHATSAPP FUNCTIONS
 // ====================================
 
-async function sendWhatsAppMessage(quote) {
+async function sendWhatsAppToOwner(quote) {
     try {
         const message = `
-🏗️ *Cresent Construction - Quote Received*
+🏗️ *NEW QUOTE REQUEST - Cresent Construction*
+
+*Customer Details:*
+👤 Name: ${quote.fullName}
+📞 Phone: +91${quote.phone}
+📧 Email: ${quote.email}
+
+*Project Details:*
+📋 Project Type: ${quote.projectType}
+💬 Message: ${quote.message}
+
+*Received at:* ${new Date().toLocaleString('en-IN')}
+
+---
+Reply on WhatsApp or contact the customer directly.
+        `.trim();
+
+        const response = await axios.post(META_WHATSAPP_API_URL, {
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: OWNER_WHATSAPP_NUMBER,
+            type: "text",
+            text: {
+                body: message
+            }
+        }, {
+            headers: {
+                'Authorization': `Bearer ${META_ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('✅ WhatsApp message sent to owner:', response.data.messages[0].id);
+        return true;
+    } catch (error) {
+        console.error('❌ Error sending WhatsApp message:', error.response?.data || error.message);
+        return false;
+    }
+}
+
+async function sendWhatsAppToCustomer(quote) {
+    try {
+        const message = `
+🏗️ *Cresent Construction - Quote Request Received*
 
 Hello ${quote.fullName},
 
@@ -248,7 +290,7 @@ Thank you for submitting your quote request! 🙏
 
 *Your Details:*
 📋 Project Type: ${quote.projectType}
-📞 Phone: +91 ${quote.phone}
+📞 Phone: +91${quote.phone}
 📧 Email: ${quote.email}
 
 We will review your project and contact you within 24-48 hours with a detailed quote.
@@ -262,17 +304,25 @@ We will review your project and contact you within 24-48 hours with a detailed q
 Thank you! ✨
         `.trim();
 
-        const result = await twilioClient.messages.create({
-            body: message,
-            from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
-            to: `whatsapp:+91${quote.phone}`
+        const response = await axios.post(META_WHATSAPP_API_URL, {
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: quote.phone,
+            type: "text",
+            text: {
+                body: message
+            }
+        }, {
+            headers: {
+                'Authorization': `Bearer ${META_ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
         });
 
-        console.log('✅ WhatsApp message sent:', result.sid);
+        console.log('✅ WhatsApp message sent to customer:', response.data.messages[0].id);
         return true;
     } catch (error) {
-        console.error('❌ Error sending WhatsApp message:', error);
-        // Don't throw - continue if WhatsApp fails
+        console.error('❌ Error sending WhatsApp to customer:', error.response?.data || error.message);
         return false;
     }
 }
@@ -328,16 +378,18 @@ app.post('/api/submit-quote', async (req, res) => {
         // Save to database
         const savedQuote = saveQuote(quote);
 
-        // Send emails (async, don't wait)
-        Promise.all([
-            sendEmailToAdmin(quote).catch(err => console.error('Admin email failed:', err)),
-            sendEmailToCustomer(quote).catch(err => console.error('Customer email failed:', err))
-        ]).then(() => {
-            console.log('📧 Both emails sent successfully');
-        });
+        // Send emails (async, don't wait) - Optional, can be disabled if not configured
+        if (process.env.GMAIL_USER && process.env.GMAIL_PASSWORD) {
+            Promise.all([
+                sendEmailToAdmin(quote).catch(err => console.error('Admin email failed:', err)),
+                sendEmailToCustomer(quote).catch(err => console.error('Customer email failed:', err))
+            ]).then(() => {
+                console.log('📧 Both emails sent successfully');
+            });
+        }
 
-        // Send WhatsApp message (async, don't wait)
-        sendWhatsAppMessage(quote).catch(err => console.error('WhatsApp failed:', err));
+        // WhatsApp messages are now handled client-side with pre-populated links
+        console.log('✅ Quote saved to database. WhatsApp integration handled client-side.');
 
         // Return success response
         res.status(200).json({
