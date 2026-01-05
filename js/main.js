@@ -25,7 +25,7 @@ function openQuoteForm() {
 function startQuickChat() {
     // Open WhatsApp with quick message
     const whatsappMessage = `Hi, Crecent Construction%0A%0AI would like to get a quote for my project.`;
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=9994019086&text=${whatsappMessage}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=917418621523&text=${whatsappMessage}`;
     window.open(whatsappUrl, '_blank');
 }
 
@@ -431,7 +431,7 @@ function submitQuote() {
     const whatsappMessage = `Hi, Crecent Construction%0A%0A📩 New quote request.%0A%0AName: ${fullName}%0APhone: +91 ${phone}%0AEmail: ${email}%0AProject Type: ${projectType}%0A%0AMessage:%0A${message}`;
     
     // Open WhatsApp with pre-populated message
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=9994019086&text=${whatsappMessage}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=917418621523&text=${whatsappMessage}`;
     window.open(whatsappUrl, '_blank');
     
     // Show success message
