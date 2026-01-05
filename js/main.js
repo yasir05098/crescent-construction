@@ -373,9 +373,9 @@ function validateForm(fullName, phone, email, projectType, message) {
         document.getElementById('phone').classList.remove('is-invalid');
     }
 
-    // Email validation
+    // Email validation (optional - only validate format if provided)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
+    if (email && !emailRegex.test(email)) {
         document.getElementById('emailError').style.display = 'block';
         document.getElementById('email').classList.add('is-invalid');
         isValid = false;
